@@ -1,0 +1,32 @@
+{
+    "split" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "veping" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "snpEff" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "prep_annovar" :
+    {
+        "output" : ".logs/{rule}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/%j.{rule}.err"
+    },
+    "annovar" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "combine" :
+    {
+        "output" : ".logs/{rule}/%j.{rule}.out",
+        "error"  : ".logs/{rule}/%j.{rule}.err"
+    },
+}
