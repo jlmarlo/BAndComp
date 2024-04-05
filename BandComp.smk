@@ -6,7 +6,7 @@ import os
 #singularity: config['sif']
 
 chromosomes = []
-for x in range(1,31):
+for x in range(1,32):
 	x=str(x)
 	chrom = 'chr'+x
 	chromosomes.append(chrom)
