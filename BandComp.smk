@@ -210,5 +210,5 @@ rule combine:
 				--input {params.vcfs} \
 				--output {output.finalvcf}
 			gatk --java-options "-Xmx18g -Xms6g" \
-				Index Feature File -I {output.finalvcf}
+				IndexFeatureFile -I {output.finalvcf}
 		'''
