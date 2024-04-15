@@ -29,4 +29,29 @@
         "output" : ".logs/{rule}/%j.{rule}.out",
         "error"  : ".logs/{rule}/%j.{rule}.err"
     },
+    "decompose" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "snpEff_bed" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "veping_text" :
+    {
+        "output" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.out",
+        "error" : ".logs/{rule}/{wildcards.chrom}/%j.{rule}.err"
+    },
+    "prep_table":
+    {
+        "output" : ".logs/{rule}/%j.{rule}.out",
+        "error" : ".logs/{rule}/%j.{rule}.err"
+    },
+    "compare" :
+    {
+        "output" : ".logs/{rule}/%j.{rule}.out",
+        "error" : ".logs/{rule}/%j.{rule}.err"
+    },
 }

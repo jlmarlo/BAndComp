@@ -18,8 +18,13 @@ chromosomes.append('chrM')
 ##rule all
 ## final combined vcf with all three annotations
 rule all:
-	input: 'outputs/final/PPID3Annotation.vcf.gz'
-
+	input: 
+		'outputs/final/PPID3Annotation.vcf.gz',
+		#expand('outputs/Veped_text/{chrom}/{chrom}_Veped.tab.gz',
+		#	chrom=chromosomes),
+		#expand('outputs/snpeff_bed/{chrom}/{chrom}_SnpEff_Veped.txt.gz',
+		#	chrom=chromosomes)
+		'outputs/final/AnnotationTable.tsv'
 ##rule split
 ##read in large VCF and split into chromosomes
 
@@ -40,13 +45,30 @@ rule split:
 			gatk IndexFeatureFile -I {output.smallVCF}
 		'''
 
+rule decompose:
+	input:
+		vcf = 'outputs/splitVCFs/{chrom}/{chrom}_noAnno.vcf.gz',
+		tbi = 'outputs/splitVCFs/{chrom}/{chrom}_noAnno.vcf.gz.tbi'
+	output:
+		decomp = 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz',
+		decomptbi = 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz.tbi'
+	resources:
+		mem_mb = 50000,
+		time = 420
+	shell:
+		'''
+			bcftools norm {input.vcf} -m - -Oz -o {output.decomp}
+			gatk IndexFeatureFile -I {output.decomp}
+		'''
+
+
 ##rule vep
 ##take in a chromosome VCF and annotation with VEP
 
 rule veping:
 	input:
-		vcf= 'outputs/splitVCFs/{chrom}/{chrom}_noAnno.vcf.gz',
-		tbi= 'outputs/splitVCFs/{chrom}/{chrom}_noAnno.vcf.gz.tbi'
+		vcf= 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz',
+		tbi= 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz.tbi'
 	output:
 		vepTbi= 'outputs/Veped/{chrom}/{chrom}_Veped.vcf.gz.tbi',
 		vepVCF = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf.gz'
@@ -83,6 +105,45 @@ rule veping:
 			tabix -p vcf {output.vepVCF}
 		'''
 
+rule veping_text:
+        input:
+                vcf= 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz',
+                tbi= 'outputs/decomposed/{chrom}/{chrom}_noAnno_decomp.vcf.gz.tbi'
+        output:
+                vepTab= 'outputs/Veped_text/{chrom}/{chrom}_Veped.tab.gz',
+               # vepVCF = 'outputs/Veped_text/{chrom}/{chrom}_Veped.vcf.gz'
+        params:
+                ref_fasta= 'datafiles/goldenPath.Ec_build-3.0_wMSY.fa',
+                gtf = 'datafiles/Equus_caballus.EquCab3.0.104_sorted.gtf.gz',
+                unzipped = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf'
+        threads: 6
+        singularity : config['sif']
+        resources:
+                time=420,
+                mem_mb=60000
+        shell:
+                '''
+                        set -e
+                        source activate ensembl-vep
+
+                        vep --help
+
+                        vep -i {input.vcf} -o {output.vepTab} \
+                                --fasta {params.ref_fasta} \
+                                --fork {threads} \
+                                --force_overwrite \
+                                --tab \
+                                --gtf {params.gtf} \
+                                --dir_plugins /opt/wags/src/VepPlugins \
+                                --dont_skip \
+                                --protein \
+                                --variant_class \
+                                --biotype \
+                                --compress_output bgzip \
+		'''
+                
+
+
 ##rule snpEff
 ##take in VCF annotated with VEP and annotate with snpEff
 
@@ -118,6 +179,37 @@ rule snpEff:
 			gatk IndexFeatureFile -I {output.snpeffgz}
 				
 		'''
+
+rule snpEff_bed:
+        input:
+                Effedvcf = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.vcf',
+                Effedtbi = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.vcf.gz.tbi'
+        output:
+                snpeffbed = 'outputs/snpeff_bed/{chrom}/{chrom}_SnpEff_Veped.txt.gz',
+        params:
+                splicerange = '2',
+                updownrange = '5000',
+                database = 'EquCab3.0.105',
+                unzipped = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.txt'
+        threads: 6
+        resources:
+                time=420,
+                mem_mb=80000
+        shell:
+                '''
+			cat {input.Effedvcf} \
+				| ~/mambaforge/envs/snakeprac/share/snpeff-5.2-0/scripts/vcfEffOnePerLine.pl \
+				|SnpSift -Xmx14g extractFields - \
+				"CHROM" "POS" "REF" "ALT" "ANN[*].ALLELE" \
+				"ANN[*].GENE" "ANN[*].GENEID" "ANN[*].FEATURE" "ANN[*].FEATUREID" \
+				"ANN[*].EFFECT" "ANN[*].IMPACT" \
+				-e '.' \
+                                > {params.unzipped}
+                        bgzip --threads {threads} -c {params.unzipped} > {output.snpeffbed}
+
+                '''
+
+
 
 ##rule annovar
 ##take in VCF annotated with VEP and snpEff and annotate with ANNOVAR
@@ -178,6 +270,8 @@ rule annovar:
 				--operation g \
 				--codingarg '--tolerate' \
 				--nastring '.' \
+				--neargene 5000 \
+				--separate \
 				--nopolish
 			bgzip --threads {threads} -c {params.unzipped} > {output.annovarVCF}
 			gatk IndexFeatureFile -I {output.annovarVCF}
@@ -211,4 +305,33 @@ rule combine:
 				--output {output.finalvcf}
 			gatk --java-options "-Xmx18g -Xms6g" \
 				IndexFeatureFile -I {output.finalvcf}
+		'''
+
+rule prep_table:
+	input:
+		vcf = 'outputs/final/PPID3Annotation.vcf.gz',
+		tib = 'outputs/final/PPID3Annotation.vcf.gz.tbi'
+	output:
+		table = 'outputs/final/AnnotationTable.tsv'
+	resources:
+		time = 420,
+		mem_mb = 80000
+	shell:
+		'''
+			gatk VariantsToTable \
+				-V {input.vcf} \
+				-F CHROM -F POS -F REF -F ALT \
+				-F CSQ -F ANN \
+				-F Fun.ensGene -F Gene.ensGene -F GeneDetail.ensGene \
+				-F ExonicFunc.ensGene -F AAChange.ensGene \
+				-O {output.table}
+		'''
+
+rule compare:
+	input:
+	output:
+	resources:
+	shell:
+		'''
+			python programs/Compare.py {input.annotation}
 		'''
