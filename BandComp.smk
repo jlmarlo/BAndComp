@@ -11,9 +11,6 @@ for x in range(1,32):
 	chrom = 'chr'+x
 	chromosomes.append(chrom)
 chromosomes.append('chrX')
-chromosomes.append('MSY')
-chromosomes.append('chrM')
-
 
 ##rule all
 ## final combined vcf with all three annotations
@@ -75,7 +72,8 @@ rule veping:
 	params:
 		ref_fasta= 'datafiles/goldenPath.Ec_build-3.0_wMSY.fa',
 		gtf = 'datafiles/Equus_caballus.EquCab3.0.104_sorted.gtf.gz',
-		unzipped = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf'
+		unzipped = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf',
+		updown = '1000'
 	threads: 6
 	singularity : config['sif']
 	resources:
@@ -97,6 +95,7 @@ rule veping:
 				--dir_plugins /opt/wags/src/VepPlugins \
 				--dont_skip \
 				--protein \
+				--distance {params.updown} \
 				--variant_class \
 				--biotype \
 				--compress_output bgzip \
@@ -158,7 +157,7 @@ rule snpEff:
 		html = 'outputs/snpeff/html/{chrom}.summary.html'
 	params:
 		splicerange = '2',
-		updownrange = '5000',
+		updownrange = '1000',
 		database = 'EquCab3.0.105',
 		unzipped = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.vcf'
 	threads: 6
@@ -270,8 +269,6 @@ rule annovar:
 				--operation g \
 				--codingarg '--tolerate' \
 				--nastring '.' \
-				--neargene 5000 \
-				--separate \
 				--nopolish
 			bgzip --threads {threads} -c {params.unzipped} > {output.annovarVCF}
 			gatk IndexFeatureFile -I {output.annovarVCF}
@@ -322,7 +319,7 @@ rule prep_table:
 				-V {input.vcf} \
 				-F CHROM -F POS -F REF -F ALT \
 				-F CSQ -F ANN \
-				-F Fun.ensGene -F Gene.ensGene -F GeneDetail.ensGene \
+				-F Func.ensGene -F Gene.ensGene -F GeneDetail.ensGene \
 				-F ExonicFunc.ensGene -F AAChange.ensGene \
 				-O {output.table}
 		'''
