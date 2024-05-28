@@ -18,20 +18,20 @@ parser.add_argument('annotation_file',type=str, help='Path to file containing a 
 args = parser.parse_args()
 
 table =open(args.annotation_file,'rt') #read in annotation table made by GATK
-output = open('FinalReport.txt','wt') #output file
+output = open('outputs/final/FinalReport.txt','wt') #output file
 table.readline() #get rid of header
-error = open('Errors.txt','wt') #error file
+error = open('outputs/final/Errors.txt','wt') #error file
 ##Files to hold mismatching impacts and classes
-mismatch = open('MismatchLines.txt','wt') ##file to hold mismatching info for VEP and SnpEff
+mismatch = open('outputs/final/MismatchLines.txt','wt') ##file to hold mismatching info for VEP and SnpEff
 
-V_Amismatch = open('V_AMismatch.txt','wt')
-S_Amismatch = open('S_AMismatch.txt','wt')
-Somemismatch = open('3AnnotatorComparison.txt','wt')
+V_Amismatch = open('outputs/final/V_AMismatch.txt','wt')
+S_Amismatch = open('outputs/final/S_AMismatch.txt','wt')
+Somemismatch = open('outputs/final/3AnnotatorComparison.txt','wt')
 
-uneven = open('UniqueTranscripts.txt','wt') ##file to hold records of transcripts with no match
-changes = open('ClassChanges.txt','wt')
-test = open('testoutput.txt','wt')
-partial = open('partialMatches.txt','wt')
+uneven = open('outputs/final/UniqueTranscripts.txt','wt') ##file to hold records of transcripts with no match
+changes = open('outputs/final/ClassChanges.txt','wt')
+test = open('outputs/final/testoutput.txt','wt')
+partial = open('outputs/final/partialMatches.txt','wt')
 linenumber=1 
 ##impact comparisons
 same=0

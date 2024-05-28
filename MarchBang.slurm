@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=200gb
+#SBATCH --mem=100gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=marlo072@umn.edu
 #SBATCH --job-name Annotate
@@ -17,7 +17,7 @@ conda activate snakeprac
 #cd $SLURM_SUBMIT_DIR
 snakemake -s BandComp.smk -c 6\
 	--configfile config.yaml \
-	--profile slurm.go_compare \
+	--profile profile.go_compare \
 	--keep-incomplete \
 	--rerun-incomplete \
 	--use-singularity
