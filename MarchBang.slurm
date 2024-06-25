@@ -1,11 +1,11 @@
 #!/bin/bash -l
-#SBATCH -t 12:00:00
+#SBATCH -t 24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=100gb
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=marlo072@umn.edu
+#SBATCH --mail-user=*email here*
 #SBATCH --job-name Annotate
 #SBATCH -o ./Jobs/%j.Annotate.out
 #SBATCH -e ./Jobs/%j.Annotate.err
@@ -13,7 +13,7 @@
 
 set -e
 
-conda activate snakeprac
+conda activate BandCompEnv
 #cd $SLURM_SUBMIT_DIR
 snakemake -s BandComp.smk -c 6\
 	--configfile config.yaml \

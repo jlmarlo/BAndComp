@@ -1,7 +1,7 @@
 ###This will be the snakemake file that contains the rules to create a VCF with all three annotations
 ##BAndComp Better Annotation Comparison
 
-import os
+#import os
 
 #singularity: config['sif']
 ##creates list of relevant chromosomes. Can be altered to include Y or mitochondrial if desired
@@ -13,8 +13,8 @@ for x in range(1,32):
 chromosomes.append('chrX')
 #chromosomes.append('MSY')
 #chromosomes.append('chrM')
-VCF = 'SmallSample.vcf.gz'
-outputVCF = 'SmallSampleAnnotated.vcf.gz'
+VCF = 'fileName'
+outputVCF = 'finalFileName'
 ##rule all
 #
 ## final combined vcf with all three annotations
