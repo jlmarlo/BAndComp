@@ -13,6 +13,7 @@ Assuming you already have conda or mamba installed
 ```
 #create environment
 mamba create -n BandCompEnv -c bioconda -c conda-forge snakemake=7.19.1 bcftools=1.17 gatk4=4.2.6.1 snpeff=5.2
+
 ```
 **Download repository**
 
@@ -41,6 +42,8 @@ You can copy and paste this token any time you are asked for a github password.
 ```
 cd BAndComp
 wget https://s3.msi.umn.edu/wags/wags.sif
+mkdir Jobs
+mkdir datafiles
 mv wags.sif datafiles/wags.sif
 ```
 
@@ -64,7 +67,8 @@ Change the '--mail-user' option to include your email
 
 **Check program integrity**
 ```
-snakemake -s BandComp.smk -np -configfile config.yaml
+mamba activate BandCompEnv
+snakemake -s BandComp.smk -np --configfile config.yaml
 
 ```
 This should create an output that lists all steps that need to be completed. There should be no warning text at the bottom of this text it should finish with a table of numbers and step names. 
