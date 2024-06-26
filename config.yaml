@@ -1,1 +1,7 @@
-sif : {pathwaytosifimage}
+sif : 'datafiles/wags.sif'
+ref : 'datafiles/goldenPath.Ec_build-3.0_wMSY.fa'
+vepgtf : 'datafiles/Equus_caballus.EquCab3.0.109.gtf.gz'
+updown : '1000'
+VCF : 'joint_call.goldenPath.20230726.vcf.gz'
+final : 'joint_call.goldenPath_annotated.20230726.vcf.gz'
+

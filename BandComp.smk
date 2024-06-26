@@ -13,8 +13,8 @@ for x in range(1,32):
 chromosomes.append('chrX')
 #chromosomes.append('MSY')
 #chromosomes.append('chrM')
-VCF = 'fileName'
-outputVCF = 'finalFileName'
+VCF = config['VCF']
+outputVCF = config['final']
 ##rule all
 #
 ## final combined vcf with all three annotations
@@ -80,10 +80,10 @@ rule veping:
 		vepTbi= 'outputs/Veped/{chrom}/{chrom}_Veped.vcf.gz.tbi',
 		vepVCF = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf.gz'
 	params:
-		ref_fasta= 'datafiles/goldenPath.Ec_build-3.0_wMSY.fa',
-		gtf = 'datafiles/Equus_caballus.EquCab3.0.104_sorted.gtf.gz',
+		ref_fasta= config['ref'],
+		gtf = config['vepgtf'],
 		unzipped = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf',
-		updown = '1000'
+		updown = config['updown']
 	threads: 6
 	singularity : config['sif']
 	resources:
@@ -129,7 +129,7 @@ rule snpEff:
 		html = 'outputs/snpeff/{chrom}/{chrom}.summary.html'
 	params:
 		splicerange = '2',
-		updownrange = '1000',
+		updownrange = config['updown'],
 		database = 'EquCab3.0.105',
 		unzipped = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.vcf'
 	threads: 6
@@ -166,7 +166,7 @@ rule prep_annovar:
 		program = 'programs/annovar/',
 		database = 'equCab3',
 		outdir = 'outputs/annovar_database/',
-		fasta = 'datafiles/goldenPath.Ec_build-3.0_wMSY.fa'
+		fasta = config['ref']
 	resources:
 		time=420,
 		mem_mb=200000
@@ -201,7 +201,7 @@ rule annovar:
 		unzipped = 'outputs/annovarVCFs/{chrom}/{chrom}_Annovar_SnpEff_Veped.equCab3_multianno.vcf'
 	resources:
 		time=420,
-		mem_mb=100000
+		mem_mb=200000
 	threads: 6
 	shell:
 		'''
