@@ -1,0 +1,4 @@
+These are the files that need to be in the datafiles directory for the program to work
+VCF that has no annotation information. This is the VCF that will be annotated by all three programs
+Reference files - the reference genome that was used in the creation of the VCF
+The GTF file which will be used by VEP to annotate the file

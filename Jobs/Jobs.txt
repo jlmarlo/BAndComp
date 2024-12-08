@@ -1,0 +1,1 @@
+This directory is held for the creation of job log files.
