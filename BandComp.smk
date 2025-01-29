@@ -1,9 +1,6 @@
 ###This will be the snakemake file that contains the rules to create a VCF with all three annotations
 ##BAndComp Better Annotation Comparison
 
-#import os
-
-#singularity: config['sif']
 ##creates list of relevant chromosomes. Can be altered to include Y or mitochondrial if desired
 chromosomes = []
 for x in range(1,32):
@@ -68,7 +65,6 @@ rule decompose:
 
 ##rule vep
 ##take in a chromosome VCF and annotation with VEP
-#Creates text and html summary files
 #Uses VEP version from Jonah's singularity image because I couldn't get VEP to work on my own
 #Might be a sticking point
 
@@ -81,7 +77,7 @@ rule veping:
 		vepVCF = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf.gz'
 	params:
 		ref_fasta= config['ref'],
-		gtf = config['vepgtf'],
+		gtf = config['gtf'],
 		unzipped = 'outputs/Veped/{chrom}/{chrom}_Veped.vcf',
 		updown = config['updown']
 	threads: 6
@@ -130,7 +126,7 @@ rule snpEff:
 	params:
 		splicerange = '2',
 		updownrange = config['updown'],
-		database = 'EquCab3.0.105',
+		database = config['snpEffdatabase'],
 		unzipped = 'outputs/snpeff/{chrom}/{chrom}_SnpEff_Veped.vcf'
 	threads: 6
 	resources:
@@ -156,11 +152,15 @@ rule snpEff:
 #of the annovar annotation rule because it only needs to be run a single time. 
 #currently set up only for equCab3 and the goldenPath reference. In the future 
 #will need to be modified to potentially allow for other references. 
-#Though annovar is very limited in what references it can actually work with
+
 
 rule prep_annovar:
+	input: 
+		gtf = config['gtf']
 	output:
-		ensGene = 'outputs/annovar_database/equCab3_ensGene.txt',
+		PreensGene = 'outputs/annovar_database/EquCab3_ensGene01.txt',
+		ensGene = 'outputs/annovar_database/equCab3_ensGene02.txt',
+		ensGeneFin = 'outputs/annovar_database/equCab3_ensGene.txt',
 		mRNAFasta = 'outputs/annovar_database/equCab3_ensGeneMrna.fa'
 	params:
 		program = 'programs/annovar/',
@@ -172,11 +172,10 @@ rule prep_annovar:
 		mem_mb=200000
 	shell:
 		'''
-			perl {params.program}annotate_variation.pl --downdb \
-				--buildver {params.database} \
-				ensGene \
-				{params.outdir}
-			perl {params.program}retrieve_seq_from_fasta.pl {output.ensGene} \
+			gtfToGenePred -genePredExt {input.gtf} {output.PreensGene}
+			nl -nln {output.PreensGene} > {output.ensGene}
+			awk 'BEGIN{{OFS="\t"}} {{$3="chr"$3; print}}' {output.ensGene} > {output.ensGeneFin}
+			perl {params.program}retrieve_seq_from_fasta.pl {output.ensGeneFin} \
 				-seqfile {params.fasta} \
 				-format ensGene \
 				-outfile {output.mRNAFasta}
@@ -200,8 +199,8 @@ rule annovar:
 		outdir = 'outputs/annovarVCFs/{chrom}/',
 		unzipped = 'outputs/annovarVCFs/{chrom}/{chrom}_Annovar_SnpEff_Veped.equCab3_multianno.vcf'
 	resources:
-		time=420,
-		mem_mb=200000
+		time=840,
+		mem_mb=100000
 	threads: 6
 	shell:
 		'''
@@ -283,8 +282,14 @@ rule comparison:
 	output:
 		report = 'outputs/final/FinalReport.txt'	
 	params:
-		program = 'programs/Comparing.py'
+		program = 'programs/Comparing2.0.py',
+		dictionary = 'datafiles/VariantClassDictionary.json',
+		VEPPrec = 'datafiles/VEP_precedence.txt',
+		EffPrec = 'datafiles/SnpEff_precedence.txt'
+	resources:
+		time = 360,
+		mem_mb = 80000
 	shell:
 		'''
-			python {params.program} {input.table}
+			python {params.program} {input.table} {params.dictionary} {params.VEPPrec} {params.EffPrec}
 		'''

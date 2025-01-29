@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=200gb
+#SBATCH --mem=10gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=*email here*
 #SBATCH --job-name Annotate

@@ -49,9 +49,9 @@
         "output" : ".logs/{rule}/%j.{rule}.out",
         "error" : ".logs/{rule}/%j.{rule}.err"
     },
-    "compare" :
+    "comparison" :
     {
         "output" : ".logs/{rule}/%j.{rule}.out",
         "error" : ".logs/{rule}/%j.{rule}.err"
-    },
+    }
 }
